@@ -1,0 +1,13 @@
+# day: 26/09/2026:
+
+mkdir development-Hiring-Assessment-Platform
+cd development-Hiring-Assessment-Platform
+npm init -y
+
+npm install express
+
+npm install -D typescript @types/node @types/express tsx
+
+npx tsc --init
+
+npm install dotenv
