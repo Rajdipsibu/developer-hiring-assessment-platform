@@ -11,3 +11,75 @@ npm install -D typescript @types/node @types/express tsx
 npx tsc --init
 
 npm install dotenv
+
+----For push on Github ---------
+# 1. Initialize an empty Git repository
+git init
+
+# 2. Add all files to the staging area 
+# (Git will automatically ignore files listed in your .env and node_modules if your .gitignore is set up)
+git add .
+
+# 3. Create your first commit
+git commit -m "initial commit: express ts server setup with dotenv"
+
+# 4. Rename your default branch to 'main' (standard practice)
+git branch -M main
+
+# 5. git remote add origin https://github.com/Rajdipsibu/developer-hiring-assessment-platform.git
+
+# 6. git checkout -b development
+# 7. git push -u origin development
+
+------------------
+1. npm install sequelize mysql2 zod //use mysql database
+2. npm install -D sequelize-cli ts-node //for migration
+
+Step 1: Initialize the Migration Setup
+npx sequelize-cli init
+
+Step 2: Configure it for TypeScript
+
+Step 3: Add Scripts to package.json
+
+"scripts": {
+  "migration:generate": "npx sequelize-cli migration:generate --name",
+  "db:migrate": "npx sequelize-cli db:migrate",
+  "db:rollback": "npx sequelize-cli db:migrate:undo"
+}
+
+step 4: How to use it moving forward:
+
+To create a new migration (e.g., creating a users table): npm run migration:generate -- create-users-table
+To apply the changes to your database: npm run db:migrate
+To undo the last change (rollback): npm run db:rollback
+
+-------------
+Putting them inside the src folder is the modern best practice for TypeScript projects. (Modern TS Practice)
+# How to move them inside src correctly
+
+Step 1: Restructure your folders
+
+├── src/
+│   ├── config/
+│   │   └── config.js
+│   ├── migrations/
+│   ├── models/
+│   ├── seeders/
+│   └── server.ts
+
+Step 2: Tell Sequelize CLI where the folders are
+
+Create a file named .sequelizerc in your root directory
+
+// .sequelizerc
+const path = require('path');
+
+module.exports = {
+  'config': path.resolve('src', 'config', 'config.js'),
+  'models-path': path.resolve('src', 'models'),
+  'seeders-path': path.resolve('src', 'seeders'),
+  'migrations-path': path.resolve('src', 'migrations')
+};
+-------------------
+https://share.google/aimode/HarTlh5AKwcytdyFs
