@@ -220,9 +220,11 @@ Use permissions so authorization does not become hardcoded everywhere.
 |---|---|
 | id | BIGINT PK |
 | name | VARCHAR(100) UNIQUE |
-| resource | VARCHAR(50) |
+| module | VARCHAR(50) |
 | action | VARCHAR(50) |
 | description | VARCHAR(255) |
+| status | Boolean |
+| is_delete | Boolean |
 
 Examples:
 
@@ -265,7 +267,10 @@ Connects roles to permissions.
 | id | BIGINT PK |
 | role_id | BIGINT FK |
 | permission_id | BIGINT FK |
+| status | boolean |
+| is_deleted | boolean |
 | created_at | DATETIME |
+| updated_at | DATETIME |
 
 Example:
 

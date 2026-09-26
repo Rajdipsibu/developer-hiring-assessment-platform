@@ -8,7 +8,7 @@
     "build": "tsc",
     "start": "node dist/server.js",
     "migration:generate": "npx sequelize-cli migration:generate --name",
-    "db:migrate": "npx sequelize-cli db:migrate --to-env development",
+    "db:migrate": "npx sequelize-cli db:migrate --env development",
     "db:rollback": "npx sequelize-cli db:migrate:undo"
   },
   "keywords": [],
