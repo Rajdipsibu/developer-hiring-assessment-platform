@@ -3,33 +3,81 @@
 /** @type {import('sequelize-cli').Migration} */
 module.exports = {
   async up (queryInterface, Sequelize) {
-    await queryInterface.createTable("user_roles", {
+    await queryInterface.createTable("developer_profiles", {
       id: {
         type: Sequelize.BIGINT,
         allowNull: false,
         autoIncrement: true,
         primaryKey: true,
       },
+
       user_id: {
         type: Sequelize.INTEGER,
         allowNull: false,
+        unique: true,
+
         references: {
           model: "users",
           key: "id",
         },
+
         onUpdate: "CASCADE",
         onDelete: "CASCADE",
       },
 
-      role_id: {
-        type: Sequelize.INTEGER,
+      first_name: {
+        type: Sequelize.STRING(100),
         allowNull: false,
-        references: {
-          model: "roles",
-          key: "id",
-        },
-        onUpdate: "CASCADE",
-        onDelete: "CASCADE",
+      },
+
+      last_name: {
+        type: Sequelize.STRING(100),
+        allowNull: true,
+      },
+
+      phone: {
+        type: Sequelize.STRING(20),
+        allowNull: true,
+      },
+
+      headline: {
+        type: Sequelize.STRING(255),
+        allowNull: true,
+      },
+
+      bio: {
+        type: Sequelize.TEXT,
+        allowNull: true,
+      },
+
+      location: {
+        type: Sequelize.STRING(150),
+        allowNull: true,
+      },
+
+      experience_years: {
+        type: Sequelize.DECIMAL(4, 1),
+        allowNull: true,
+      },
+
+      resume_url: {
+        type: Sequelize.STRING(500),
+        allowNull: true,
+      },
+
+      github_url: {
+        type: Sequelize.STRING(500),
+        allowNull: true,
+      },
+
+      linkedin_url: {
+        type: Sequelize.STRING(500),
+        allowNull: true,
+      },
+
+      portfolio_url: {
+        type: Sequelize.STRING(500),
+        allowNull: true,
       },
       status:{
         type:Sequelize.BOOLEAN,
@@ -46,6 +94,7 @@ module.exports = {
         allowNull: false,
         defaultValue: Sequelize.literal("CURRENT_TIMESTAMP"),
       },
+
       updated_at: {
         type: Sequelize.DATE,
         allowNull: false,
@@ -54,15 +103,9 @@ module.exports = {
         ),
       },
     });
-
-    await queryInterface.addConstraint("user_roles", {
-      fields: ["user_id", "role_id"],
-      type: "unique",
-      name: "user_roles_user_id_role_id_unique",
-    });
   },
 
   async down (queryInterface, Sequelize) {
-    await queryInterface.dropTable("user_roles");
+    await queryInterface.dropTable("developer_profiles");
   }
 };

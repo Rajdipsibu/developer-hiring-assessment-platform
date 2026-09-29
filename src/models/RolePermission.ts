@@ -2,31 +2,31 @@ import { DataTypes, Model, type Optional } from "sequelize";
 
 import sequelize from "../config/database.js";
 
-interface UserRoleAttributes {
+interface RolePermissionAttributes {
   id: number;
-  user_id: number;
   role_id: number;
+  permission_id: number;
   status: boolean;
   is_deleted: boolean;
 }
 
-export interface UserRoleCreationAttributes extends Optional<
-  UserRoleAttributes,
+export interface RolePermissionCreationAttributes extends Optional<
+  RolePermissionAttributes,
   "id" | "status" | "is_deleted"
 > {}
 
-class UserRole
-  extends Model<UserRoleAttributes, UserRoleCreationAttributes>
-  implements UserRoleAttributes
+class RolePermission
+  extends Model<RolePermissionAttributes, RolePermissionCreationAttributes>
+  implements RolePermissionAttributes
 {
   public id!: number;
-  public user_id!: number;
   public role_id!: number;
+  public permission_id!: number;
   public status!: boolean;
   public is_deleted!: boolean;
 }
 
-UserRole.init(
+RolePermission.init(
   {
     id: {
       type: DataTypes.BIGINT,
@@ -35,20 +35,22 @@ UserRole.init(
       primaryKey: true,
     },
 
-    user_id: {
-      type: DataTypes.INTEGER,
+    role_id: {
+      type: DataTypes.BIGINT,
       allowNull: false,
     },
 
-    role_id: {
-      type: DataTypes.INTEGER,
+    permission_id: {
+      type: DataTypes.BIGINT,
       allowNull: false,
     },
+
     status: {
       type: DataTypes.BOOLEAN,
       allowNull: false,
       defaultValue: true,
     },
+
     is_deleted: {
       type: DataTypes.BOOLEAN,
       allowNull: false,
@@ -57,7 +59,7 @@ UserRole.init(
   },
   {
     sequelize,
-    tableName: "user_roles",
+    tableName: "role_permissions",
 
     timestamps: true,
     createdAt: "created_at",
@@ -66,11 +68,12 @@ UserRole.init(
     indexes: [
       {
         unique: true,
-        fields: ["user_id", "role_id"],
-        name: "user_roles_user_id_role_id_unique",
+        fields: ["role_id", "permission_id"],
+        name: "role_permissions_role_id_permission_id_unique",
       },
     ],
+    
   },
 );
 
-export default UserRole;
+export default RolePermission;
