@@ -3,7 +3,7 @@
 /** @type {import('sequelize-cli').Migration} */
 module.exports = {
   async up (queryInterface, Sequelize) {
-    await queryInterface.createTable("permissions", {
+    await queryInterface.createTable("actions", {
       id: {
         type: Sequelize.BIGINT,
         allowNull: false,
@@ -14,34 +14,12 @@ module.exports = {
       name: {
         type: Sequelize.STRING(100),
         allowNull: false,
+      },
+
+      code: {
+        type: Sequelize.STRING(100),
+        allowNull: false,
         unique: true,
-      },
-
-      module: {
-        type: Sequelize.STRING(50),
-        allowNull: false,
-      },
-
-      action: {
-        type: Sequelize.STRING(50),
-        allowNull: false,
-      },
-
-      description: {
-        type: Sequelize.STRING(255),
-        allowNull: true,
-      },
-
-      status: {
-        type: Sequelize.BOOLEAN,
-        allowNull: false,
-        defaultValue: true,
-      },
-
-      is_deleted: {
-        type: Sequelize.BOOLEAN,
-        allowNull: false,
-        defaultValue: false,
       },
 
       created_at: {
@@ -61,6 +39,6 @@ module.exports = {
   },
 
   async down (queryInterface, Sequelize) {
-    await queryInterface.dropTable("permissions");
+    await queryInterface.dropTable("actions");
   }
 };

@@ -8,7 +8,7 @@ The platform has three main user types:
 - **COMPANY** — represents recruiters/employees of a company; creates jobs, manages candidates, assessments and interviews.
 - **ADMIN** — platform-level administrator; manages users, companies, moderation, verification and audit operations.
 
-All three use the same central authentication system. Do **not** create three separate login systems.
+All three use the same central authentication system.
 
 ---
 
@@ -42,7 +42,7 @@ JWT + Refresh Token           |
                 MySQL
 ```
 
-Optional infrastructure:
+Optional infrastructure: (future Implemntation)
 
 ```text
 Redis
@@ -74,9 +74,7 @@ users
   |
   +---- Refresh Tokens
   |
-  +---- Verification Tokens
-  |
-  +---- Password Reset Tokens
+  +---- otp Verification (email verification, forgot password, mfa )
   |
   +---- Audit Logs
 ```
@@ -101,12 +99,11 @@ developer_profiles
 companies
 company_members
 
-refresh_tokens
-email_verification_tokens
-password_reset_tokens
+refresh_tokens      // Manage refresh sessions
+otp_verifications   // Email/password-reset/OTP verification
 
-login_attempts
-audit_logs
+login_attempts      // Store login history
+audit_logs          // Track important user/admin action
 ```
 
 Optional later:
@@ -134,21 +131,9 @@ Central authentication table.
 | created_at | DATETIME | |
 | updated_at | DATETIME | |
 
-Important:
-
-```text
-Never store the user's plain password.
-```
-
-Store:
-
 ```text
 password_hash
 ```
-
-instead.
-
-Recommended index:
 
 ```text
 UNIQUE(email)
@@ -179,7 +164,7 @@ COMPANY
 ADMIN
 ```
 
-Later you can add:
+Later can add:
 
 ```text
 COMPANY_ADMIN
@@ -414,27 +399,33 @@ This is better than simply storing `company_id` on `users`.
 
 Store a **hash** of the refresh token rather than the raw token.
 
-Recommended browser approach:
-
 ```text
 Refresh Token -> HttpOnly + Secure + SameSite cookie
 ```
+id | user_id | token_hash | expires_at | revoked_at
+1  | 25      | abc...     | 2026-10-29 | NULL
+2  | 25      | xyz...     | 2026-10-29 | 2026-09-29
 
-Avoid storing long-lived refresh tokens in `localStorage`.
+revoked_at = NULL → token is still valid.
 
----
+revoked_at != NULL → token has been revoked/logout.
 
-# 13. Email Verification
 
-### `email_verification_tokens`
+# 13. EMAIL_VERIFICATION
+# PASSWORD_RESET
+# EMAIL_CHANGE
+# LOGIN
+# MFA
 
 | Column | Type |
 |---|---|
 | id | BIGINT PK |
 | user_id | BIGINT FK |
-| token_hash | VARCHAR(255) |
+| otp_hash | VARCHAR(255) |
+| purpose | VARCHAR(255) | NOT NULL
+| attempts | INT NOT NULL DEFAULT 0
+| used_at | DATETIME NULL
 | expires_at | DATETIME |
-| verified_at | DATETIME NULL |
 | created_at | DATETIME |
 
 Flow:
@@ -463,23 +454,6 @@ Verify token
    v
 email_verified = true
 ```
-
----
-
-# 14. Password Reset
-
-### `password_reset_tokens`
-
-| Column | Type |
-|---|---|
-| id | BIGINT PK |
-| user_id | BIGINT FK |
-| token_hash | VARCHAR(255) |
-| expires_at | DATETIME |
-| used_at | DATETIME NULL |
-| created_at | DATETIME |
-
-Flow:
 
 ```text
 Forgot Password
@@ -559,6 +533,70 @@ USER_SUSPENDED
 ROLE_CHANGED
 ```
 
+                         users
+                           │
+          ┌────────────────┼─────────────────┐
+          │                │                 │
+          ▼                ▼                 ▼
+ refresh_tokens     otp_verification    login_attempts
+          │                │
+          │                │
+          └────────────────┴───────────────┐
+                                           │
+                                           ▼
+                                      audit_logs
+
+                                      | Table              | Main purpose                          |
+| ------------------ | ------------------------------------- |
+| `refresh_tokens`   | Manage refresh sessions               |
+| `otp_verification` | Email/password-reset/OTP verification |
+| `login_attempts`   | Store login history                   |
+| `audit_logs`       | Track important user/admin actions    |
+| **Redis**          | Temporary login rate-limit counter    |
+
+
+
+                    ┌──────────────┐
+                    │   Modules    │
+                    └──────┬───────┘
+                           │
+                       module_id
+                           │
+                           ▼
+                    ┌──────────────┐
+                    │ ModuleAction │
+                    │              │
+                    │ module_id    │
+                    │ action_id    │
+                    └──────┬───────┘
+                           │
+                    module_action_id
+                           │
+                           ▼
+                    ┌──────────────┐
+                    │RolePermission│
+                    │              │
+                    │ role_id      │
+                    │module_action │
+                    └──────┬───────┘
+                           │
+                         role_id
+                           │
+                           ▼
+                    ┌──────────────┐
+                    │    Roles     │
+                    └──────────────┘
+
+                    ┌──────────────┐
+                    │   Actions    │
+                    └──────┬───────┘
+                           │
+                       action_id
+                           │
+                           ▼
+                    ┌──────────────┐
+                    │ ModuleAction │
+                    └──────────────┘
 ---
 
 # 17. Admin Account

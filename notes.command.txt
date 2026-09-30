@@ -85,3 +85,22 @@ module.exports = {
 https://share.google/aimode/HarTlh5AKwcytdyFs
 
 # day: 26/09/2026: (here you write your working process also)==================================================================================
+# day: 30/09/2026: (here you write your working process also)==================================================================================
+
+how to migrate individualy:
+npx sequelize-cli db:migrate --name XXXXXX-create-users-table.js
+
+rollback individual file:
+npx sequelize-cli db:migrate:undo:all --to XXXXXX-name-of-file.js
+
+Goal	                                  Command
+Undo only the single last migration	    npx sequelize-cli db:migrate:undo
+Undo all migrations completely	        npx sequelize-cli db:migrate:undo:all
+
+Before migrating or rolling back individually, it is highly recommended to run the status command to see which files are currently active (up) or pending (down):
+npx sequelize-cli db:migrate:status
+
+
+so all seeding is complete and all migration file complete and all models complete
+now we need to work on code
+1. authentication, registration, tommorow

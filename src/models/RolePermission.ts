@@ -5,15 +5,16 @@ import sequelize from "../config/database.js";
 interface RolePermissionAttributes {
   id: number;
   role_id: number;
-  permission_id: number;
+  module_action_id: number;
   status: boolean;
   is_deleted: boolean;
 }
 
-export interface RolePermissionCreationAttributes extends Optional<
-  RolePermissionAttributes,
-  "id" | "status" | "is_deleted"
-> {}
+export interface RolePermissionCreationAttributes
+  extends Optional<
+    RolePermissionAttributes,
+    "id" | "status" | "is_deleted"
+  > {}
 
 class RolePermission
   extends Model<RolePermissionAttributes, RolePermissionCreationAttributes>
@@ -21,9 +22,12 @@ class RolePermission
 {
   public id!: number;
   public role_id!: number;
-  public permission_id!: number;
+  public module_action_id!: number;
   public status!: boolean;
   public is_deleted!: boolean;
+
+  public readonly created_at!: Date;
+  public readonly updated_at!: Date;
 }
 
 RolePermission.init(
@@ -40,7 +44,7 @@ RolePermission.init(
       allowNull: false,
     },
 
-    permission_id: {
+    module_action_id: {
       type: DataTypes.BIGINT,
       allowNull: false,
     },
@@ -68,12 +72,11 @@ RolePermission.init(
     indexes: [
       {
         unique: true,
-        fields: ["role_id", "permission_id"],
-        name: "role_permissions_role_id_permission_id_unique",
+        fields: ["role_id", "module_action_id"],
+        name: "role_permissions_role_id_module_action_id_unique",
       },
     ],
-    
-  },
+  }
 );
 
 export default RolePermission;

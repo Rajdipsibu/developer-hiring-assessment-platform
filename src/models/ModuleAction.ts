@@ -2,35 +2,41 @@ import { DataTypes, Model, type Optional } from "sequelize";
 
 import sequelize from "../config/database.js";
 
-interface PermissionAttributes {
+interface ModuleActionAttributes {
   id: number;
   name: string;
-  module: string;
-  action: string;
+  code: string;
+  module_id: number;
+  action_id: number;
   description?: string;
   status: boolean;
   is_deleted: boolean;
 }
 
-export interface PermissionCreationAttributes extends Optional<
-  PermissionAttributes,
-  "id" | "description" | "status" | "is_deleted"
-> {}
+export interface ModuleActionCreationAttributes
+  extends Optional<
+    ModuleActionAttributes,
+    "id" | "description" | "status" | "is_deleted"
+  > {}
 
-class Permission
-  extends Model<PermissionAttributes, PermissionCreationAttributes>
-  implements PermissionAttributes
+class ModuleAction
+  extends Model<ModuleActionAttributes, ModuleActionCreationAttributes>
+  implements ModuleActionAttributes
 {
   public id!: number;
   public name!: string;
-  public module!: string;
-  public action!: string;
+  public code!: string;
+  public module_id!: number;
+  public action_id!: number;
   public description?: string;
   public status!: boolean;
-  public is_deleted!: boolean;  
+  public is_deleted!: boolean;
+
+  public readonly created_at!: Date;
+  public readonly updated_at!: Date;
 }
 
-Permission.init(
+ModuleAction.init(
   {
     id: {
       type: DataTypes.BIGINT,
@@ -42,16 +48,21 @@ Permission.init(
     name: {
       type: DataTypes.STRING(100),
       allowNull: false,
+    },
+
+    code: {
+      type: DataTypes.STRING(100),
+      allowNull: false,
       unique: true,
     },
 
-    module: {
-      type: DataTypes.STRING(50),
+    module_id: {
+      type: DataTypes.BIGINT,
       allowNull: false,
     },
 
-    action: {
-      type: DataTypes.STRING(50),
+    action_id: {
+      type: DataTypes.BIGINT,
       allowNull: false,
     },
 
@@ -70,16 +81,16 @@ Permission.init(
       type: DataTypes.BOOLEAN,
       allowNull: false,
       defaultValue: false,
-    },
+    }
   },
   {
     sequelize,
-    tableName: "permissions",
+    tableName: "module_actions",
 
     timestamps: true,
     createdAt: "created_at",
     updatedAt: "updated_at",
-  },
+  }
 );
 
-export default Permission;
+export default ModuleAction;

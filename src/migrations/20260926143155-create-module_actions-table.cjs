@@ -1,35 +1,54 @@
-"use strict";
+'use strict';
 
 /** @type {import('sequelize-cli').Migration} */
 module.exports = {
-  async up(queryInterface, Sequelize) {
-    await queryInterface.createTable("role_permissions", {
+  async up (queryInterface, Sequelize) {
+    await queryInterface.createTable("module_actions", {
       id: {
         type: Sequelize.BIGINT,
         allowNull: false,
         autoIncrement: true,
         primaryKey: true,
       },
-      role_id: {
-        type: Sequelize.INTEGER,
+
+      name: {
+        type: Sequelize.STRING(100),
         allowNull: false,
-        references: {
-          model: "roles",
-          key: "id",
-        },
-        onUpdate: "CASCADE",
-        onDelete: "CASCADE",
+        unique: true,
       },
-      module_action_id: {
+      code: {
+        type: Sequelize.STRING(100),
+        allowNull: false,
+        unique: true,
+      },
+
+      module_id: {
         type: Sequelize.BIGINT,
         allowNull: false,
         references: {
-          model: "module_actions",
+          model: "modules",
           key: "id",
         },
         onUpdate: "CASCADE",
         onDelete: "CASCADE",
       },
+
+      action_id: {
+        type: Sequelize.BIGINT,
+        allowNull: false,
+        references: {
+          model: "actions",
+          key: "id",
+        },
+        onUpdate: "CASCADE",
+        onDelete: "CASCADE",
+      },
+
+      description: {
+        type: Sequelize.STRING(255),
+        allowNull: true,
+      },
+
       status: {
         type: Sequelize.BOOLEAN,
         allowNull: false,
@@ -41,6 +60,7 @@ module.exports = {
         allowNull: false,
         defaultValue: false,
       },
+
       created_at: {
         type: Sequelize.DATE,
         allowNull: false,
@@ -51,19 +71,18 @@ module.exports = {
         type: Sequelize.DATE,
         allowNull: false,
         defaultValue: Sequelize.literal(
-          "CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP",
+          "CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP"
         ),
       },
     });
-
-    await queryInterface.addConstraint("role_permissions", {
-      fields: ["role_id", "module_action_id"],
+    await queryInterface.addConstraint("module_actions", {
+      fields: ["module_id", "action_id"],
       type: "unique",
-      name: "role_permissions_role_id_module_action_id_unique",
+      name: "module_actions_module_id_action_id_unique",
     });
   },
 
-  async down(queryInterface, Sequelize) {
-    await queryInterface.dropTable("role_permissions");
-  },
+  async down (queryInterface, Sequelize) {
+    await queryInterface.dropTable("module_actions");
+  }
 };
