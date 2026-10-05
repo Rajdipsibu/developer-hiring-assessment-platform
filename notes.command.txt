@@ -104,3 +104,6 @@ npx sequelize-cli db:migrate:status
 so all seeding is complete and all migration file complete and all models complete
 now we need to work on code
 1. authentication, registration, tommorow
+
+# day: 01/10/2026: (here you write your working process also)==================================================================================
+1. create iregister api with implement zod validation

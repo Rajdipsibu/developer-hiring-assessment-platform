@@ -1,6 +1,7 @@
-import express, {type Request,type Response } from 'express';
+import express, { type Request, type Response } from 'express';
 import dotenv from 'dotenv';
-import {connectDB} from './config/database.js';
+import { connectDB } from './config/database.js';
+import router from './routes/index.js';
 
 dotenv.config();
 
@@ -8,10 +9,7 @@ const app = express();
 const PORT = process.env.PORT;
 
 app.use(express.json());
-
-app.get('/', (req: Request, res: Response) => {
-  res.json({ message: 'Hello, TypeScript + Express!' });
-});
+app.use('/api', router);
 
 
 const startServer = async () => {

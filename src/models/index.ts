@@ -9,6 +9,9 @@ import ModuleAction from "./ModuleAction.js";
 import RolePermission from "./RolePermission.js";
 import DeveloperProfile from "./DeveloperProfile.js";
 import Company from "./Company.js";
+import RefreshToken from "./RefreshToken.js";
+import OtpVerification from "./OtpVerification.js";
+import LoginAttempt from "./LoginAttempt.js";
 
 // =====================================================
 // User ↔ Role
@@ -46,6 +49,46 @@ ModuleAction.belongsToMany(Roles, {
   foreignKey: "module_action_id",
   otherKey: "role_id",
   as: "roles",
+});
+
+RolePermission.belongsTo(Roles, {
+  foreignKey: "role_id",
+  as: "role",
+});
+
+Roles.hasMany(RolePermission, {
+  foreignKey: "role_id",
+  as: "rolePermissions",
+});
+
+RolePermission.belongsTo(ModuleAction, {
+  foreignKey: "module_action_id",
+  as: "moduleAction",
+});
+
+ModuleAction.hasMany(RolePermission, {
+  foreignKey: "module_action_id",
+  as: "rolePermissions",
+});
+
+UserRole.belongsTo(User, {
+  foreignKey: "user_id",
+  as: "user",
+});
+
+User.hasMany(UserRole, {
+  foreignKey: "user_id",
+  as: "userRoles",
+});
+
+UserRole.belongsTo(Roles, {
+  foreignKey: "role_id",
+  as: "role",
+});
+
+Roles.hasMany(UserRole, {
+  foreignKey: "role_id",
+  as: "userRoles",
 });
 
 // =====================================================
@@ -93,6 +136,37 @@ DeveloperProfile.belongsTo(User, {
   as: "user",
 });
 
+
+User.hasMany(RefreshToken, {
+  foreignKey: "user_id",
+  as: "refreshTokens",
+});
+
+RefreshToken.belongsTo(User, {
+  foreignKey: "user_id",
+  as: "user",
+});
+
+User.hasMany(OtpVerification, {
+  foreignKey: "user_id",
+  as: "otpVerifications",
+});
+
+OtpVerification.belongsTo(User, {
+  foreignKey: "user_id",
+  as: "user",
+});
+
+User.hasMany(LoginAttempt, {
+  foreignKey: "user_id",
+  as: "loginAttempts",
+});
+
+LoginAttempt.belongsTo(User, {
+  foreignKey: "user_id",
+  as: "user",
+});
+
 // =====================================================
 // Exports
 // =====================================================
@@ -107,5 +181,8 @@ export {
   RolePermission,
   DeveloperProfile,
   Company,
+  RefreshToken,
+  OtpVerification,
+  LoginAttempt,
   sequelize,
 };
