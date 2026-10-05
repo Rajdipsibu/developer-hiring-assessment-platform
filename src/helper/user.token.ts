@@ -28,7 +28,7 @@ export interface UserTokenPayload {
     policies: string[];
 }
 
-export const user_token = async (
+export const userToken = async (
     userData: UserTokenPayload
 ): Promise<TokenResponse> => {
     const jwtSecret = getJwtSecret();
@@ -132,7 +132,7 @@ export const refreshUserToken = async (
     const policies = await getUserPolicies(user.id || user.dataValues.id);
 
     // Generate new access & refresh tokens and store the new refresh token
-    const newTokens = await user_token({
+    const newTokens = await userToken({
         id: user.id || user.dataValues.id,
         policies,
     });
@@ -140,6 +140,7 @@ export const refreshUserToken = async (
     return newTokens;
 };
 
+//logout
 export const revokeRefreshToken = async (
     rawRefreshToken: string
 ): Promise<boolean> => {
@@ -160,4 +161,8 @@ export const revokeRefreshToken = async (
     return false;
 };
 
-export default user_token;
+
+/**
+ * at the time we call for refresh token then it check the refresh token is exist in db or its not revoked yet
+ * then it again call userToken function for new access and refresh token.
+ */

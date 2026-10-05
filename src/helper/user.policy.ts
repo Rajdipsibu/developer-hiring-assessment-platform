@@ -1,7 +1,5 @@
 import { Op } from "sequelize";
 import {
-    Action,
-    Module,
     ModuleAction,
     RolePermission,
     UserRole,
@@ -28,18 +26,7 @@ export const getUserPolicies = async (userId: number): Promise<string[]> => {
             {
                 model: ModuleAction,
                 as: "moduleAction",
-                include: [
-                    {
-                        model: Module,
-                        as: "module",
-                        attributes: ["code"],
-                    },
-                    {
-                        model: Action,
-                        as: "action",
-                        attributes: ["code"],
-                    },
-                ],
+                attributes: ["code"],
             },
         ],
     });
@@ -51,31 +38,18 @@ export const getUserPolicies = async (userId: number): Promise<string[]> => {
         const moduleAction =
             permData.moduleAction?.dataValues || permData.moduleAction;
 
-        const module = moduleAction?.module?.dataValues || moduleAction?.module;
-        const action = moduleAction?.action?.dataValues || moduleAction?.action;
+        // moduleAction.code is already stored as "MODULE:ACTION" (e.g. "USER:READ")
+        const codeString: string | undefined = moduleAction?.code;
+        if (!codeString) continue;
 
-        let module_code = module?.code;
-        let action_code = action?.code;
+        // const parts = codeString.split(/[:.]/);
+        // if (parts.length !== 2) continue;
 
-        // Fallback if module/action code is embedded in moduleAction.code (e.g. "USER:READ")
-        if (!module_code || !action_code) {
-            const codeString = moduleAction?.code;
-            if (codeString && typeof codeString === "string") {
-                const parts = codeString.split(/[:.]/);
-                if (parts.length === 2) {
-                    module_code = module_code || parts[0];
-                    action_code = action_code || parts[1];
-                }
-            }
-        }
+        // const policyString = `${parts[0]}.${parts[1]}`;
 
-        if (module_code && action_code) {
-            const policyString = `${module_code}.${action_code}`;
-
-            // Ensure no duplicates
-            if (!policies.includes(policyString)) {
-                policies.push(policyString);
-            }
+        // Ensure no duplicates
+        if (!policies.includes(codeString)) {
+            policies.push(codeString);
         }
     }
 

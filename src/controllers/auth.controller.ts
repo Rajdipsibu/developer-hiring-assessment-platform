@@ -1,41 +1,14 @@
 import type { Request, Response } from "express";
 import bcrypt from "bcryptjs";
-import { User, LoginAttempt } from "../models/index.js";
+import { OtpVerification, User } from "../models/index.js";
 import { getUserPolicies } from "../helper/user.policy.js";
+import { recordLoginAttempt } from "../helper/user.loginAttempt.js";
 import {
-    user_token,
+    userToken,
     refreshUserToken,
     revokeRefreshToken,
 } from "../helper/user.token.js";
-
-const recordLoginAttempt = async (
-    email: string,
-    status: "SUCCESS" | "FAILED",
-    userId: number | null = null,
-    failureReason: string | null = null,
-    req?: Request
-) => {
-    try {
-        const ip_address = (
-            req?.ip ||
-            req?.socket?.remoteAddress ||
-            "127.0.0.1"
-        ).slice(0, 45);
-        const user_agent =
-            (req?.headers?.["user-agent"] || null)?.slice(0, 500) || null;
-
-        await LoginAttempt.create({
-            user_id: userId,
-            email,
-            ip_address,
-            user_agent,
-            status,
-            failure_reason: failureReason,
-        });
-    } catch (error) {
-        console.error("Failed to record login attempt:", error);
-    }
-};
+import { generateOTP, sendEmail } from "../helper/sendEmail.js";
 
 export const registerUser = async (req: Request, res: Response) => {
     try {
@@ -115,7 +88,7 @@ export const login = async (req: Request, res: Response) => {
 
         const policies = await getUserPolicies(user.dataValues.id);
         const userData = { id: user.dataValues.id, policies };
-        const result = await user_token(userData);
+        const result = await userToken(userData);
 
         await recordLoginAttempt(email, "SUCCESS", user.dataValues.id, null, req);
 
@@ -129,8 +102,6 @@ export const login = async (req: Request, res: Response) => {
         return res.status(500).json({ message: "internal server error !!" });
     }
 };
-
-export const loginUser = login;
 
 export const refreshToken = async (req: Request, res: Response) => {
     try {
@@ -175,3 +146,60 @@ export const logout = async (req: Request, res: Response) => {
         return res.status(500).json({ message: "internal server error !!" });
     }
 };
+
+export const forgotPassword = async (req: Request, res: Response) => {
+    const { email } = req.body;
+    if (!email) {
+        return res.status(400).json({ message: "email is required !" })
+    }
+    const user = await User.findOne({ where: { email } });
+    if (!user) {
+        return res.status(404).json({ message: "user not found !" })
+    }
+    const userData = user.dataValues;
+    const otp = generateOTP();
+    const hashedOtp = await bcrypt.hash(otp, 10);
+    const otpData = await OtpVerification.create({
+        user_id: userData.id,
+        otp_hash: hashedOtp,
+        purpose: 'PASSWORD_RESET',
+        expires_at: new Date(Date.now() + 10 * 60 * 1000)
+    });
+    await sendEmail({
+        recipient: userData.email,
+        subject: 'Password Reset',
+        text: `Your OTP is ${otp}`
+    });
+    return res.status(200).json({ message: "OTP sent successfully !" })
+}
+
+export const verifyOtp = async (req: Request, res: Response) => {
+    const { email, OTP } = req.body;
+    if (!email || !OTP) {
+        return res.status(400).json({ message: "email and OTP is required !" })
+    }
+    const user = await User.findOne({ where: { email } });
+    if (!user) {
+        return res.status(404).json({ message: "user not found !" })
+    }
+    const otpData = await OtpVerification.findOne({ where: { user_id: user.dataValues.id, purpose: 'PASSWORD_RESET', used_at: null } });
+    if (!otpData) {
+        return res.status(404).json({ message: "otp not found !" })
+    }
+    const compareOtp = await bcrypt.compare(OTP, otpData.dataValues.otp_hash);
+    if (!compareOtp) {
+        return res.status(400).json({ message: "invalid otp !" })
+    }
+    if (otpData.dataValues.attempts > 3) {
+        return res.status(400).json({ message: "otp attempts are exceeded !" })
+    }
+    if (otpData.dataValues.expires_at < new Date()) {
+        return res.status(400).json({ message: "otp is expired !" })
+    }
+    //mark otp as used
+    await OtpVerification.update({
+        used_at: new Date(),
+    }, { where: { user_id: user.dataValues.id, purpose: 'PASSWORD_RESET' } });
+    return res.status(200).json({ message: "otp verified successfully !" })
+}
+//we have to think how to track the attempt of otp
